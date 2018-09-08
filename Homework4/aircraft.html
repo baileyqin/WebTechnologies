@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Homework 4</title>
+<!--
+<BODY>
+This is for USC disclaimer
+</BODY>
+-->
+<script>
+
+function generateHTML(xmlDoc)
+   {  ELEMENT_NODE = 1;    // MS parser doesn't define Node.ELEMENT_NODE
+        if(xmlDoc==null)
+		{
+		alert("invalid file");
+		return;
+		}
+		   root=xmlDoc.DocumentElement;
+           planes=xmlDoc.getElementsByTagName("Row");
+		   
+		    if(planes.length==0){
+			alert("No Rows in file");
+			return;
+		}
+		   html_text="<html><head><style> ul> :first-child{ font-weight:bold;} </style><title>about:blank</title></head><body>";
+           html_text+="<table border='2'>";
+           planeNodeList=planes.item(0).childNodes;
+           html_text+="<tbody>";
+           html_text+="<tr>";
+           x=120*4;  y=55*4;
+	   // output the headers 
+
+           for(i=0;i<planeNodeList.length;i++)
+           {  if(planeNodeList.item(i).nodeType==ELEMENT_NODE)
+			   {  header=planeNodeList.item(i).nodeName;
+				html_text+="<th>"+header+"</th>";  }   }
+           html_text+="</tr>";
+           // output out the values 
+           for(i=0;i<planes.length;i++) //do for all planes
+           {  planeNodeList=planes.item(i).childNodes; //get properties of a plane
+               html_text+="<tr>";      //start a new row of the output table
+               for(j=0;j<planeNodeList.length;j++)
+               {  if(planeNodeList.item(j).nodeType==ELEMENT_NODE)
+			        {
+				  if(planeNodeList.item(j).nodeName=="Plane")
+					{//handle images separately
+					try{
+						html_text+="<td><img src='"+planeNodeList.item(j).firstChild.nodeValue+"' width='"+x+"' height='"+y+"'></td>";  }
+					catch(TypeError){
+						html_text+="<td></td>"
+					}
+					}
+				 else if(planeNodeList.item(j).nodeName=="HomePage")
+					{//handle HomePage separately
+						try{html_text+="<td><a href='"+planeNodeList.item(j).firstChild.nodeValue.trim()+"'>"+planeNodeList.item(j).firstChild.nodeValue+"</a></td>";  }
+						catch(TypeError){
+							html_text+="<td></td>";
+							}
+						}
+				 else if(planeNodeList.item(j).nodeName=="Hubs")
+					{//handle hubs separately
+						html_text+="<td><ul>";
+						hubhub=planeNodeList.item(j).childNodes;
+						for(k=0;k<hubhub.length;k++)
+							{ 
+							if(hubhub.item(k).nodeType==ELEMENT_NODE){
+							try{
+							html_text+="<li>"+hubhub.item(k).firstChild.nodeValue.trim()+"</li>";
+							}
+							catch(TypeError){
+							html_text+="<li></li>";
+							}
+							}
+							}
+						html_text+="</ul></td>";
+						}						
+				  else {
+					try{
+						html_text+="<td>"+planeNodeList[j].firstChild.nodeValue.trim()+"</td>";
+					}
+					catch(TypeError){
+						html_text+="<td></td>"
+					}
+
+						}   		
+					}    
+				}
+               html_text+="</tr>";  }
+           html_text+="</tbody>";  html_text+="</table>";
+           html_text+="</body></html>";  
+}
+//I HAVE TO ADD ANOTHER FORLOOP ABOVE FOR EACH HUB
+
+function viewXML(what)
+{var URL = what.URL.value;
+  function loadXML(url) {
+      if (window.XMLHttpRequest)
+  {// code for IE7+, Firefox, Chrome, Opera, Safari
+       xmlhttp=new XMLHttpRequest();   }
+ else {// code for IE6, IE5
+    xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");  }
+  xmlhttp.open("GET",url,false);
+  xmlhttp.send();
+  xmlDoc=xmlhttp.responseXML;
+  return xmlDoc;   }
+  xmlDoc = loadXML(URL);
+ if (window.ActiveXObject) //if IE, simply execute script (due to async prop).
+ {  if (xmlDoc.parseError.errorCode != 0) {
+    var myErr = xmlDoc.parseError;
+    generateError(xmlDoc);
+	if(html_text){
+    hWin = window.open("", "Error", "height=300,width=340");
+    hWin.document.write(html_text);
+	}
+  } else {  generateHTML(xmlDoc);
+        if(html_text){
+			hWin = window.open("", "Assignment4", "height=1200,width=900");
+            hWin.document.write(html_text); 
+			}
+			}
+ } else //else if FF, execute script once XML object has loaded
+ {  xmlDoc.onload=generateHTML(xmlDoc);
+    if(html_text){
+	hWin = window.open("", "Assignment4", "height=1200,width=900");
+    hWin.document.write(html_text);  
+	}}
+if(html_text){
+	hWin.document.close();}  
+	}
+	
+function enterSubmit(event,value){
+	if (event.keyCode==13){
+	event.preventDefault();
+	viewXML(value);
+	}
+}
+	
+ </script>
+ </head>
+<body>
+<center>
+<h1 text-align=center;>Enter URL for Airline List XML Files </h1>
+<form name="myform" method="POST" id="location">
+<input type="text" name="URL" maxlength="255" size="50" value="airlinelist.xml" onkeypress="enterSubmit(event,this.form)" />
+<br />
+<input type="button" name="submit" value="Submit Query" onClick="viewXML(this.form)" />
+</form>
+</center>
+</body>
+</html>
